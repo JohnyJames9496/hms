@@ -1,0 +1,140 @@
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.loading-spinner {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.spinner-small {
+  width: 40px;
+  height: 40px;
+}
+
+.spinner-medium {
+  width: 60px;
+  height: 60px;
+}
+
+.spinner-large {
+  width: 80px;
+  height: 80px;
+}
+
+.spinner-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-dots {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.spinner-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  border-radius: 50%;
+  transform-origin: 0 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.loading-text {
+  text-align: center;
+  color: white;
+}
+
+.loading-text h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.loading-dots {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.floating-icons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floating-icon {
+  position: absolute;
+  font-size: 2rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .loading-text h3 {
+    font-size: 1.25rem;
+  }
+  
+  .spinner-large {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .floating-icon {
+    font-size: 1.5rem;
+  }
+}
+
+/* Additional animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.spinner-inner {
+  animation: pulse 2s ease-in-out infinite;
+}

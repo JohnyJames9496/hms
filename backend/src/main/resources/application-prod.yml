@@ -1,0 +1,55 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: hostel-mess-management
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://db.tzxqnjuywtsbeovrkjej.supabase.co:5432/postgres}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:rintoCherian}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  
+  security:
+    user:
+      name: admin
+      password: admin123
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:hmsSecretKey2024ForHostelMessManagementSystem}
+  expiration: 86400000
+
+# Application Configuration
+app:
+  meal:
+    cost: 60.0
+    fine-per-day: 30.0
+    payment-grace-days: 7
+  upi:
+    id: rintocherian2006@oksbi
+
+logging:
+  level:
+    root: INFO
+    com.hms: INFO
+    org.springframework.security: WARN
