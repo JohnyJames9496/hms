@@ -402,21 +402,3 @@ See `database/supabase-init.sql` for the complete schema with sample data.
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is open source and available under the MIT License.
-
-## 👨‍💻 Author
-
-**Rinto Cherian**
-- UPI: rintocherian2006@oksbi
-
-## 🙏 Acknowledgments
-
-- Spring Boot team for the excellent framework
-- React team for the UI library
-- Supabase for the database platform
-
----
-
-**Need Help?** Open an issue on GitHub or contact the maintainer.
