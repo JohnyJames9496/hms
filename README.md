@@ -1,9 +1,5 @@
 # HMS (Hostel Mess Management System)
 
-Welcome to the HMS project! This application is designed to streamline hostel mess management for both administrators and students.
-
-## Overview
-
 HMS (Hostel Mess Management System) provides a centralized platform to manage hostel mess operations — including student registration, meal scheduling, payment tracking, and billing. It features role-based access for admins and students, with a responsive UI and a secure REST API backend.
 
 ## Tech Stack
