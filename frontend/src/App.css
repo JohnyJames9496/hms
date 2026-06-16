@@ -39,7 +39,7 @@
   }
 }
 
-/* Custom animations for route transitions */
+
 .route-enter {
   opacity: 0;
   transform: translateY(20px);
