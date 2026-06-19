@@ -61,13 +61,13 @@ public class PaymentService {
     }
     
     public String getPaymentStatus(Long studentId) {
-        // Find the latest payment for this student
+        
         for (Map<String, Object> payment : payments.values()) {
             if (studentId.equals(payment.get("studentId"))) {
                 return (String) payment.get("status");
             }
         }
-        return "pending"; // No payment found
+        return "pending"; 
     }
     
     public List<Map<String, Object>> getPaymentHistory(Long studentId) {
