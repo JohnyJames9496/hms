@@ -20,128 +20,31 @@ const AdminDashboard = () => {
     loadDashboardData();
   }, []);
 
-  // Check for new pending payments and student bill updates periodically
-  useEffect(() => {
-    let lastRefreshTrigger = localStorage.getItem('adminRefreshTrigger');
-    
-    const interval = setInterval(() => {
-      // Check for new pending payments
-      const pendingData = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
-      const filteredPendingPayments = pendingData.filter(p => p.status === 'pending_verification');
-      
-      // Check if student bills have been updated
-      const currentRefreshTrigger = localStorage.getItem('adminRefreshTrigger');
-      const paymentsChanged = filteredPendingPayments.length !== pendingPayments.length;
-      const billsChanged = currentRefreshTrigger !== lastRefreshTrigger;
-      
-      if (paymentsChanged || billsChanged) {
-        if (paymentsChanged) {
-          setPendingPayments(filteredPendingPayments);
-        }
-        
-        if (billsChanged) {
-          refreshStudentAmounts();
-          lastRefreshTrigger = currentRefreshTrigger;
-        }
-        
-        updateDashboardStats(students, filteredPendingPayments);
-        
-        console.log('🔄 ADMIN REFRESH TRIGGERED:', {
-          paymentsChanged,
-          billsChanged,
-          newPendingCount: filteredPendingPayments.length
-        });
-      }
-    }, 2000); // Check every 2 seconds for faster updates
-
-    return () => clearInterval(interval);
-  }, [pendingPayments.length, students.length]);
-
-  // Update dashboard stats when students or pending payments change
-  useEffect(() => {
-    updateDashboardStats(students, pendingPayments);
-  }, [students.length, pendingPayments.length]);
-
-  // Refresh student amounts periodically
+  // Check for new pending payments periodically
   useEffect(() => {
     const interval = setInterval(() => {
-      refreshStudentAmounts();
-    }, 5000); // Check every 5 seconds
-
+      loadDashboardData();
+    }, 10000); // Refresh every 10 seconds
     return () => clearInterval(interval);
-  }, [students]);
+  }, []);
 
   const loadDashboardData = async () => {
     try {
-      
-      // Load students
       const studentsResponse = await fetch('/api/admin/students');
       if (studentsResponse.ok) {
         const studentsData = await studentsResponse.json();
-        
-        // Filter out deleted students (stored in localStorage)
-        const deletedStudents = JSON.parse(localStorage.getItem('deletedStudents') || '[]');
-        const filteredStudents = studentsData.filter(student => 
-          !deletedStudents.includes(student.id)
-        );
-        
-        // Add locally added students (for demo)
-        const addedStudents = JSON.parse(localStorage.getItem('addedStudents') || '[]');
-        
-        // Update student amounts with latest data
-        const updatedAddedStudents = addedStudents.map(student => {
-          const updatedAmounts = getUpdatedStudentAmount(student.id);
-          return {
-            ...student,
-            ...updatedAmounts
-          };
-        });
-        
-        const allStudents = [...filteredStudents, ...updatedAddedStudents];
-        
-        setStudents(allStudents);
-        
-        // Load pending payments from localStorage for demo
-        const pendingData = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
-        const filteredPendingPayments = pendingData.filter(p => p.status === 'pending_verification');
-        setPendingPayments(filteredPendingPayments);
-
-        // Generate today's meal data
-        generateTodayMeals();
-        
-        // Load recent activity
-        loadRecentActivity();
-        
-        // Calculate and update dashboard stats
-        updateDashboardStats(allStudents, filteredPendingPayments);
-        
-        // Initialize empty payments array
-        setPayments([]);
+        setStudents(studentsData);
+        updateDashboardStats(studentsData, pendingPayments);
       } else {
-        // If API fails, use only locally added students
-        const addedStudents = JSON.parse(localStorage.getItem('addedStudents') || '[]');
-        const allStudents = addedStudents;
-        setStudents(allStudents);
-        
-        // Load pending payments from localStorage for demo
-        const pendingData = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
-        const filteredPendingPayments = pendingData.filter(p => p.status === 'pending_verification');
-        setPendingPayments(filteredPendingPayments);
-
-        // Generate today's meal data
-        generateTodayMeals();
-        
-        // Load recent activity
-        loadRecentActivity();
-        
-        // Calculate and update dashboard stats
-        updateDashboardStats(allStudents, filteredPendingPayments);
-        
-        // Initialize empty payments array
-        setPayments([]);
+        toast.error('Failed to load students');
       }
+
+      generateTodayMeals();
+      loadRecentActivity();
+      setPayments([]);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      toast.error('Could not connect to server');
     }
   };
 
@@ -196,58 +99,41 @@ const AdminDashboard = () => {
 
   const handleAddStudentSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate admission number is 4 digits
+
     if (!/^\d{4}$/.test(newStudent.admissionNumber)) {
       toast.error('Admission number must be exactly 4 digits');
       return;
     }
 
-    // Check if admission number already exists
-    const existingStudent = students.find(s => s.admissionNumber === newStudent.admissionNumber);
-    if (existingStudent) {
-      toast.error(`Student with admission number ${newStudent.admissionNumber} already exists`);
-      return;
-    }
-
     try {
+      const response = await fetch('/api/admin/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newStudent.name,
+          admissionNumber: newStudent.admissionNumber,
+          email: newStudent.email || '',
+          phone: newStudent.phone || '',
+          roomNumber: newStudent.roomNumber || ''
+        })
+      });
 
-      const newStudentData = {
-        id: Date.now(), // Generate unique ID
-        name: newStudent.name,
-        admissionNumber: newStudent.admissionNumber,
-        email: newStudent.email || '',
-        phone: newStudent.phone || '',
-        roomNumber: newStudent.roomNumber || '',
-        isActive: true,
-        createdAt: toDateStr(getSimulatedDate()),
-        pendingAmount: calculateCurrentMonthAmount(), // Dynamic bill amount
-        totalMealsThisMonth: calculateCurrentMonthMeals()
-      };
+      if (!response.ok) {
+        const err = await response.json();
+        toast.error(err.error || 'Failed to add student');
+        return;
+      }
 
-      // Add to students list
-      const updatedStudents = [...students, newStudentData];
+      const savedStudent = await response.json();
+      const updatedStudents = [...students, savedStudent];
       setStudents(updatedStudents);
-      
-      // Update dashboard stats with new student count
       updateDashboardStats(updatedStudents, pendingPayments);
-      
-      // Store in localStorage for persistence (optional)
-      const addedStudents = JSON.parse(localStorage.getItem('addedStudents') || '[]');
-      addedStudents.push(newStudentData);
-      localStorage.setItem('addedStudents', JSON.stringify(addedStudents));
-      
-      // Update today's meals with new student count immediately
       generateTodayMealsWithStudentCount(updatedStudents.length);
-      
-      // Add to recent activity
-      addActivity('add', `Student ${newStudentData.name} added`, newStudentData.name);
-      
+      addActivity('add', `Student ${savedStudent.name} added`, savedStudent.name);
+
       setShowAddStudentModal(false);
       setNewStudent({ name: '', admissionNumber: '', email: '', phone: '', roomNumber: '' });
-      toast.success(`Student ${newStudentData.name} added successfully!`);
-      
-
+      toast.success(`Student ${savedStudent.name} added successfully!`);
     } catch (error) {
       toast.error('Failed to add student');
     }
@@ -358,91 +244,16 @@ const AdminDashboard = () => {
     return totalMeals;
   };
 
-  // Function to get updated student amounts from localStorage
-  const getUpdatedStudentAmount = (studentId) => {
-    const studentBills = JSON.parse(localStorage.getItem('studentBills') || '{}');
-    const studentBill = studentBills[studentId];
-    
-    if (studentBill) {
-      return {
-        pendingAmount: studentBill.amount || calculateCurrentMonthAmount(),
-        totalMealsThisMonth: studentBill.totalMeals || calculateCurrentMonthMeals()
-      };
-    }
-    
-    return {
-      pendingAmount: calculateCurrentMonthAmount(),
-      totalMealsThisMonth: calculateCurrentMonthMeals()
-    };
-  };
-
   // Function to update dashboard stats
   const updateDashboardStats = (studentsList = students, pendingPaymentsList = pendingPayments) => {
     const totalStudents = studentsList.length;
-    const todayMeals = totalStudents * 2; // 2 meals per student per day
-    
-    // Calculate total pending payment amount from submitted payments awaiting verification
-    const submittedPaymentsAmount = pendingPaymentsList.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-    
-    // Calculate unpaid bills (students who haven't submitted payments yet)
-    const studentBills = JSON.parse(localStorage.getItem('studentBills') || '{}');
-    const confirmedPayments = JSON.parse(localStorage.getItem('confirmedPayments') || '[]');
-    const submittedPaymentStudents = pendingPaymentsList.map(p => p.studentId);
-    const confirmedPaymentStudents = confirmedPayments.map(p => p.studentId);
-    
-    let unpaidBillsAmount = 0;
-    studentsList.forEach(student => {
-      // Skip if student has already submitted payment or payment is confirmed
-      if (!submittedPaymentStudents.includes(student.id) && !confirmedPaymentStudents.includes(student.id)) {
-        const studentBill = studentBills[student.id];
-        const billAmount = studentBill ? studentBill.amount : calculateCurrentMonthAmount();
-        unpaidBillsAmount += billAmount;
-      }
-    });
-    
-    // Total pending = submitted payments awaiting verification + unpaid bills
-    const totalPendingAmount = submittedPaymentsAmount + unpaidBillsAmount;
-    
-    console.log('📊 DASHBOARD STATS UPDATE:', {
-      totalStudents: totalStudents,
-      todayMeals: todayMeals,
-      submittedPaymentsAmount: submittedPaymentsAmount,
-      unpaidBillsAmount: unpaidBillsAmount,
-      totalPendingAmount: totalPendingAmount,
-      pendingPaymentsCount: pendingPaymentsList.length
-    });
-    
-    setDashboardStats({
-      totalStudents: totalStudents,
-      todayMeals: todayMeals,
-      pendingPayments: totalPendingAmount
-    });
-  };
+    const todayMeals = totalStudents * 2;
+    const totalPendingAmount = pendingPaymentsList.reduce((sum, p) => sum + (p.amount || 0), 0);
 
-  // Function to refresh student amounts from localStorage
-  const refreshStudentAmounts = () => {
-    setStudents(prevStudents => {
-      const updatedStudents = prevStudents.map(student => {
-        const updatedAmounts = getUpdatedStudentAmount(student.id);
-        const hasChanged = student.pendingAmount !== updatedAmounts.pendingAmount || 
-                          student.totalMealsThisMonth !== updatedAmounts.totalMealsThisMonth;
-        
-        if (hasChanged) {
-          console.log(`🔄 ADMIN - Updated amounts for ${student.name}:`, {
-            oldAmount: student.pendingAmount,
-            newAmount: updatedAmounts.pendingAmount,
-            oldMeals: student.totalMealsThisMonth,
-            newMeals: updatedAmounts.totalMealsThisMonth
-          });
-        }
-        
-        return {
-          ...student,
-          ...updatedAmounts
-        };
-      });
-      
-      return updatedStudents;
+    setDashboardStats({
+      totalStudents,
+      todayMeals,
+      pendingPayments: totalPendingAmount
     });
   };
 
@@ -472,19 +283,6 @@ const AdminDashboard = () => {
   const loadRecentActivity = () => {
     const savedActivity = JSON.parse(localStorage.getItem('recentActivity') || '[]');
     setRecentActivity(savedActivity);
-  };
-
-  const handleClearDemoData = () => {
-    if (window.confirm('Clear all demo data? This will reset deleted students, payments, etc.')) {
-      localStorage.removeItem('deletedStudents');
-      localStorage.removeItem('addedStudents');
-      localStorage.removeItem('pendingPayments');
-      localStorage.removeItem('confirmedPayments');
-      localStorage.removeItem('recentActivity');
-      setRecentActivity([]);
-      loadDashboardData();
-      toast.success('Demo data cleared successfully!');
-    }
   };
 
   const handleVerifyPayment = (paymentId) => {
@@ -531,31 +329,27 @@ const AdminDashboard = () => {
 
   const confirmDeleteStudent = async () => {
     if (!studentToDelete) return;
-    
+
     try {
-      // Store deleted student ID in localStorage for persistence
-      const deletedStudents = JSON.parse(localStorage.getItem('deletedStudents') || '[]');
-      deletedStudents.push(studentToDelete.id);
-      localStorage.setItem('deletedStudents', JSON.stringify(deletedStudents));
-      
-      // Update local state
+      const response = await fetch(`/api/admin/students/${studentToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        toast.error(err.error || 'Failed to delete student');
+        return;
+      }
+
       const updatedStudents = students.filter(s => s.id !== studentToDelete.id);
       setStudents(updatedStudents);
-      
-      // Update dashboard stats with new student count
       updateDashboardStats(updatedStudents, pendingPayments);
-      
-      // Add to recent activity
+      generateTodayMealsWithStudentCount(updatedStudents.length);
       addActivity('delete', `Student ${studentToDelete.name} removed`, studentToDelete.name);
-      
+
       setShowDeleteModal(false);
       setStudentToDelete(null);
       toast.success(`Student "${studentToDelete.name}" deleted successfully!`);
-      
-      // Update today's meals with new student count immediately
-      generateTodayMealsWithStudentCount(updatedStudents.length);
-      
-
     } catch (error) {
       toast.error('Failed to delete student');
     }
@@ -577,14 +371,6 @@ const AdminDashboard = () => {
               <p>Manage your hostel mess operations efficiently</p>
             </div>
             <div className="header-actions">
-              <motion.button
-                className="btn btn-secondary btn-sm"
-                onClick={handleClearDemoData}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Clear Data
-              </motion.button>
               <motion.button
                 className="btn btn-primary"
                 onClick={handleAddStudent}
@@ -731,17 +517,6 @@ const AdminDashboard = () => {
             <div className="students-content">
               <div className="content-header">
                 <h2>Student Management</h2>
-                <div className="content-actions">
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      refreshStudentAmounts();
-                      toast.success('Student amounts refreshed!');
-                    }}
-                  >
-                    🔄 Refresh Amounts
-                  </button>
-                </div>
               </div>
 
               <div className="students-table">
