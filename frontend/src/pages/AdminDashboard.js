@@ -119,8 +119,14 @@ const AdminDashboard = () => {
       });
 
       if (!response.ok) {
-        const err = await response.json();
-        toast.error(err.error || 'Failed to add student');
+        let errorMessage = 'Failed to add student';
+        try {
+          const err = await response.json();
+          errorMessage = err.error || err.message || errorMessage;
+        } catch {
+          errorMessage = `Server error (${response.status})`;
+        }
+        toast.error(errorMessage);
         return;
       }
 
