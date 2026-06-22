@@ -136,19 +136,19 @@ Students log in using the name and admission number added by the admin. There ar
 ## Screenshots
 
 ### Landing Page
-![Landing Page](docs/screenshots/landing_page.png)
+![Landing Page](docs/screenshots/Landing_page.png)
 
 ### Login Page
-![Login Page](docs/screenshots/login_page.png)
+![Login Page](docs/screenshots/Login_page.png)
 
 ### Admin Dashboard — Overview
-![Admin Overview](docs/screenshots/admin_overview.png)
+![Admin Overview](docs/screenshots/Admin_overview.png)
 
 ### Admin Dashboard — Students
-![Admin Students](docs/screenshots/admin_students.png)
+![Admin Students](docs/screenshots/Admin_student.png)
 
 ### Student Dashboard
-![Student Dashboard](docs/screenshots/student_dashboard.png)
+![Student Dashboard](docs/screenshots/Student_Dashboard.png)
 
 ### Payment
-![Payment](docs/screenshots/payment.png)
+![Payment](docs/screenshots/Payment.png)
