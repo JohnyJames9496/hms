@@ -34,3 +34,4 @@ app:
   jwt:
     secret: hms-super-secret-jwt-key-change-this-in-production-min-32-chars
     expiration-ms: 86400000
+
