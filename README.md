@@ -132,3 +132,23 @@ Students log in using the name and admission number added by the admin. There ar
 | `mvn spring-boot:run` | Starts the Spring Boot server |
 | `mvn clean package` | Builds a production JAR into `target/` |
 | `java -jar target/hostel-mess-management-1.0.0.jar` | Runs the production JAR |
+
+## Screenshots
+
+### Landing Page
+![Landing Page](docs/screenshots/Landing_page.png)
+
+### Login Page
+![Login Page](docs/screenshots/Login_page.png)
+
+### Admin Dashboard — Overview
+![Admin Overview](docs/screenshots/Admin_overview.png)
+
+### Admin Dashboard — Students
+![Admin Students](docs/screenshots/Admin_student.png)
+
+### Student Dashboard
+![Student Dashboard](docs/screenshots/Student_Dashboard.png)
+
+### Payment
+![Payment](docs/screenshots/Payment.png)
