@@ -1,0 +1,62 @@
+name: General Issue
+description: Create a new issue for documentation, refactoring, or anything that doesn't fit bug or feature
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for documentation updates, code refactoring, chores, or anything else that isn't a bug or feature request.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the issue or task.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem are you trying to solve or what needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution or approach.
+    validations:
+      required: false
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks
+      description: Break down the work into steps if possible.
+      placeholder: |
+        - [ ] Task 1
+        - [ ] Task 2
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What conditions must be met for this issue to be considered complete?
+      placeholder: |
+        - [ ] Requirement 1
+        - [ ] Requirement 2
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Information
+      description: Screenshots, references, links, or any other relevant details.
+    validations:
+      required: false

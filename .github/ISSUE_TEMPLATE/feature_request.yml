@@ -1,0 +1,78 @@
+name: Feature Request
+description: Suggest a new feature or improvement for the project
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to improve HMS? Fill out the form below and we'll take a look.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A brief, clear description of the feature you'd like to see.
+      placeholder: What should be added or improved?
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem It Solves
+      description: What problem or limitation does this feature address? Why is it needed?
+      placeholder: Currently, the app doesn't support... / It's difficult to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe how you'd like this to work. Be as specific as you can.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the project would this affect?
+      options:
+        - Frontend
+        - Backend
+        - Database
+        - Authentication
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Estimated Difficulty
+      description: How complex do you think this would be to implement?
+      options:
+        - Beginner
+        - Medium
+        - Hard
+        - Not sure
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other approaches you've thought about?
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any mockups, references, or extra context that might help.
+    validations:
+      required: false
