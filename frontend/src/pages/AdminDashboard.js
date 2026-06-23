@@ -4,6 +4,25 @@ import { FiUsers, FiCalendar, FiCreditCard, FiTrendingUp, FiPlus } from 'react-i
 import toast from 'react-hot-toast';
 import './AdminDashboard.css';
 
+/**compute elapsed time from ISO timestamp at render time, "Just Now","5 min ago","2 hours ago","Yesterday", "N days ago"
+ called during render so it always reflects current moment instead of a stale snapshot**/
+const getTimeAgo = (timestamp) => {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffMs = now - then;
+  const diffMin = Math.floor(diffMs/60000);
+  const diffHr = Math.floor(diffMin/60);
+  const diffDay = Math.floor(diffHr/24);
+
+  if(diffMin < 1) return 'Just now';
+  if(diffMin < 60) return `${diffMin} min ago`;
+  if(diffHr < 24) return `${diffHr} hour${diffHr !== 1 ? 's':''} ago`;
+  if(diffDay ===1 ) return 'Yesterday';
+  return `${diffDay} days ago`
+};
+
+
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [students, setStudents] = useState([]);
@@ -15,6 +34,13 @@ const AdminDashboard = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
+
+// load activity once on mount - not on every poll
+
+useEffect(()=>{
+  loadRecentActivity();
+},[]);
+
 
   // Load real data from API
   useEffect(() => {
@@ -41,7 +67,7 @@ const AdminDashboard = () => {
       }
 
       generateTodayMeals();
-      loadRecentActivity();
+      //loadRecentActivity removed from here
       setPayments([]);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -241,8 +267,7 @@ const AdminDashboard = () => {
       type: type,
       message: message,
       studentName: studentName,
-      timestamp: toDateStr(getSimulatedDate()),
-      timeAgo: 'Just now'
+      timestamp: new Date().toISOString(), //store full ISO timestamp so getTimeAgo() can compute elapsed time on render and dropped redundant timeAgo variabke
     };
 
     setRecentActivity(prev => {
@@ -432,7 +457,7 @@ const AdminDashboard = () => {
                           </div>
                           <div className="activity-text">
                             <p>{activity.message}</p>
-                            <span>{activity.timeAgo}</span>
+                            <span>{getTimeAgo(activity.timestamp)}</span>
                           </div>
                         </div>
                       ))
